@@ -11,12 +11,14 @@ import argparse
 from bisect import bisect_right
 from contextlib import contextmanager
 from itertools import product
+from functools import partial
 import os
 from os import path
 import time
 
 from blinker import signal
 import numpy as np
+import pandas as pd
 from keras import backend as K
 from keras.optimizers import Adam, SGD, RMSprop
 from keras.utils import plot_model
@@ -115,6 +117,10 @@ def first_or_self(x):
 
 
 def load_dataset(dataset, hyperparams):
+    if hyperparams['svp'] is not None:
+        indices = pd.read_csv(hyperparams['svp'], header=None, names=['index'])['index'].values  # noqa: E501
+        indices = indices[:int(len(indices) * hyperparams['svp_subset'])]
+
     datasets = {
         "canevet-icml2016-jittered": partial(CanevetICML2016, smooth=10),
         "canevet-icml2016": CanevetICML2016,
@@ -153,6 +159,22 @@ def load_dataset(dataset, hyperparams):
             ), N=15*10**5),
             ZCAWhitening,
             CIFAR10
+        ),
+        "cifar10-whitened-augmented-svp": compose(
+            partial(OntheflyAugmentedImages, ___, dict(
+                featurewise_center=False,
+                samplewise_center=False,
+                featurewise_std_normalization=False,
+                samplewise_std_normalization=False,
+                zca_whitening=False,
+                rotation_range=0,
+                width_shift_range=0.1,
+                height_shift_range=0.1,
+                horizontal_flip=True,
+                vertical_flip=False
+            ), N=15*10**5),
+            ZCAWhitening,
+            partial(CIFAR10, train_indices=indices)
         ),
         "cifar100-augmented": compose(
             partial(OntheflyAugmentedImages, ___, dict(
@@ -654,8 +676,21 @@ def main(argv):
         "--initial_weights",
         help="Initialize the model to those weights"
     )
+    parser.add_argument(
+        "--svp",
+        help="File path for ranked indices from SVP"
+    )
+    parser.add_argument(
+        "--svp_subset",
+        type=float,
+        default=1.0,
+        help="Size of subset to take from svp file"
+    )
 
     args = parser.parse_args(argv)
+    # Add SVP arguments to hyperparameters for data loading
+    args.hyperparams['svp'] = args.svp
+    args.hyperparams['svp_subset'] = args.svp_subset
 
     # Seed the PRNG
     np.random.seed(args.hyperparams.get("seed", 0))

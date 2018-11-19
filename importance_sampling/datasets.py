@@ -219,8 +219,21 @@ class InMemoryDataset(BaseDataset):
         return self._output_size
 
     @classmethod
-    def from_loadable(cls, dataset):
+    def from_loadable(cls, dataset, train_indices=None, test_indices=None):
         (a, b), (c, d) = dataset.load_data()
+        if train_indices is not None:
+            a = a[train_indices]
+            b = b[train_indices]
+
+        if test_indices is not None:
+            c = c[test_indices]
+            d = d[test_indices]
+
+        print "Train X: {}".format(a.shape)
+        print "Train Y: {}".format(b.shape)
+        print "Test X: {}".format(c.shape)
+        print "Test Y: {}".format(d.shape)
+
         return cls(a, b, c, d)
 
 
