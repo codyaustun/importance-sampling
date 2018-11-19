@@ -614,7 +614,8 @@ def main(argv):
             "cifar10", "cifar100", "cifar10-augmented", "cifar100-augmented",
             "ptb", "cifar10-whitened-augmented", "imagenet-32x32",
             "imagenet-64x64", "timit", "cifar100-whitened-augmented",
-            "mit-67", "casia", "casia-cls", "pixel-mnist"
+            "mit-67", "casia", "casia-cls", "pixel-mnist",
+            "cifar10-whitened-augmented-svp"
         ],
         help="Choose the dataset to train on"
     )
