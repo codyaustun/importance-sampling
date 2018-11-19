@@ -103,7 +103,7 @@ def name_from_grid(values, prefix="", sep="-"):
         return str(x)
     return sep.join(
         ([prefix] if prefix else []) +
-        map(tostr, values)
+        list(map(tostr, values))
     )
 
 
