@@ -120,6 +120,8 @@ def load_dataset(dataset, hyperparams):
     if hyperparams['svp'] is not None:
         indices = pd.read_csv(hyperparams['svp'], header=None, names=['index'])['index'].values  # noqa: E501
         indices = indices[:int(len(indices) * hyperparams['svp_subset'])]
+    else:
+        indices = None
 
     datasets = {
         "canevet-icml2016-jittered": partial(CanevetICML2016, smooth=10),
